@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Новогодний кроссворд</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #d40000;
+            text-shadow: 1px 1px 3px #aaa;
+        }
+
+        .crossword {
+            display: inline-grid;
+            grid-template-columns: repeat(15, 30px);
+            grid-gap: 1px;
+            margin: 20px auto;
+            background-color: #333;
+            padding: 5px;
+            border: 3px solid #222;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 16px;
+            position: relative;
+            color: #000;
+        }
+
+        .cell.black {
+            background-color: #000;
+        }
+
+        .cell.start::before {
+            content: attr(data-num);
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 9px;
+            color: #555;
+        }
+
+        .legend {
+            margin: 20px auto;
+            max-width: 600px;
+            text-align: left;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .legend h2 {
+            color: #2c3e50;
+        }
+
+        .legend ol {
+            padding-left: 20px;
+        }
+
+        .legend li {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎄 Новогодний кроссворд 🎄</h1>
+
+    <div class="crossword" id="cw"></div>
+
+    <div class="legend">
+        <h2>Вопросы:</h2>
+        <ol>
+            <li>Главное новогоднее дерево (4 буквы)</li>
+            <li>Салат, без которого не обходится праздник (6 букв)</li>
+            <li>То, что ждут дети под ёлкой (7 букв)</li>
+            <li>Бой часов в полночь (7 букв)</li>
+            <li>Поздравляет страну с Новым годом по телевизору (9 букв)</li>
+            <li>Цитрусовый фаворит праздничного стола (9 букв)</li>
+            <li>С кем встречают Новый год? (5 букв)</li>
+            <li>Праздничный фейерверк в небе (5 букв)</li>
+            <li>Вера в то, что случится волшебство (4 буквы)</li>
+            <li>Светящаяся цепочка на ёлке (8 букв)</li>
+        </ol>
+    </div>
+
+    <script>
+        // Ручная сетка 15x15: null = чёрная клетка, строка = буква, "Б#N" = буква с номером подсказки
+        const manualGrid = [
+            // 0    1    2    3    4     5       6    7    8      9       10   11    12    13   14
+            [null, null, null, null, null, null, null, null, null, 'М',     null, null, null, null, null], // 0
+            [null, null, null, null, null, 'Ё#1', 'Л', 'К', 'А', 'П#3',   null, null, null, null, null], // 1
+            [null, null, null, null, null, null, null, null, null, 'О',     null, null, null, null, null], // 2
+            [null, null, 'О#2', 'Л', 'И', 'В', 'Ь', 'Е', null, 'Д',       null, null, null, null, null], // 3
+            [null, null, null, null, null, null, null, null, null, 'А',     null, null, null, null, null], // 4
+            [null, null, null, null, null, null, null, null, null, 'Р',     null, null, 'С#8', null, null], // 5
+            [null, null, null, null, null, null, null, null, null, 'К',     null, null, 'А',   null, null], // 6
+            ['П#5','Р', 'Е', 'З', 'И', 'Д', 'Е', 'Н', 'Т', 'И',           null, null, 'Л',   null, null], // 7
+            [null, null, null, null, null, null, null, null, null, 'Н',     null, null, 'Ю',   null, null], // 8
+            [null, null, null, null, null, null, null, null, null, 'Ы',     null, null, 'Т',   null, null], // 9
+            [null, null, null, null, 'С#7','Е', 'М', 'Ь', 'Я', null,       null, null, null, null, null], //10
+            [null, null, null, null, null, null, null, null, null, null,    null, null, null, null, null], //11
+            [null, null, null, null, null, null, 'Ч#9','У', 'Д', 'О',       null, null, null, null, null], //12
+            [null, null, null, null, null, null, null, null, null, null,    null, null, null, null, null], //13
+            [null, null, 'Г#10','И','Р','Л','Я','Н','Д','А',                null, null, null, null, null], //14
+        ];
+
+        const crossword = document.getElementById('cw');
+        crossword.innerHTML = '';
+
+        for (let r = 0; r < 15; r++) {
+            for (let c = 0; c < 15; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                const val = manualGrid[r][c];
+
+                if (val === null) {
+                    cell.classList.add('black');
+                } else {
+                    let letter = val;
+                    let num = null;
+                    if (typeof val === 'string' && val.includes('#')) {
+                        const parts = val.split('#');
+                        letter = parts[0];
+                        num = parts[1];
+                        cell.classList.add('start');
+                        cell.dataset.num = num;
+                    }
+                    cell.textContent = letter;
+                }
+                crossword.appendChild(cell);
+            }
+        }
+    </script>
+</body>
+</html>
